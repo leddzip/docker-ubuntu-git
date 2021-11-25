@@ -1,0 +1,53 @@
+version: 2.1
+
+docker_context: &docker_context
+  context:
+    - Leddzip Dockerhub
+
+develop_filter: &develop_filter
+  filters:
+    branches:
+      only: develop
+master_filter: &master_filter
+  filters:
+    branches:
+      only: master
+
+jobs:
+  build-and-deploy:
+    machine:
+      image: ubuntu-2004:202107-02
+    parameters:
+      env:
+        type: string
+      ubuntu_tag:
+        type: string
+    steps:
+      - checkout
+      - run: |
+          export ENV_TARGET=<<parameters.env>>
+          export UBUNTU_DOCKER_TAG=<<parameters.python_tag>>
+          echo "$MY_CIRCLECI_DOCKERHUB_PASSWORD" | docker login --username $MY_CIRCLECI_DOCKERHUB_USERNAME --password-stdin
+          make generate-dockerfile
+          make build
+          make test
+          make push
+          make clean
+
+workflows:
+  "Build develop":
+    jobs:
+      - build-and-deploy:
+          name: Build from Ubuntu 20.04
+          <<: *docker_context
+          <<: *develop_filter
+          env: dev
+          ubuntu_tag: "20.04"
+  "Build production":
+    jobs:
+      - build-and-deploy:
+          name: Build from Ubuntu 20.04
+          <<: *docker_context
+          <<: *master_filter
+          env: prod
+          ubuntu_tag: "20.04"
