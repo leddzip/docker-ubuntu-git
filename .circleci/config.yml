@@ -26,7 +26,7 @@ jobs:
       - checkout
       - run: |
           export ENV_TARGET=<<parameters.env>>
-          export UBUNTU_DOCKER_TAG=<<parameters.python_tag>>
+          export UBUNTU_DOCKER_TAG=<<parameters.ubuntu_tag>>
           echo "$MY_CIRCLECI_DOCKERHUB_PASSWORD" | docker login --username $MY_CIRCLECI_DOCKERHUB_USERNAME --password-stdin
           make generate-dockerfile
           make build
